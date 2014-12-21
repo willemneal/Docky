@@ -10,10 +10,20 @@ except:
 # Note: We don't need to call run() since our application is embedded within
 # the App Engine WSGI application server.
 
+def catchError():
+    try:
+        sys.stderr.write(str(sys.exc_info()[0])+'\n'+str(sys.exc_info()[1]))
+    except:
+        print sys.exc_info()
+
+
 def makeDefn(definitions):
-    """calls all statements and returns their def'n in doman"""
+    """calls all statements and returns their def'n in domain"""
     domain = {}
-    exec definitions in domain
+    try:
+        exec definitions in domain
+    except:
+        catchError()
     return domain
 
 def removeAll(List, Element):
@@ -31,11 +41,7 @@ def executedCode(calls, domain):
             tmp = str(eval(call,domain))
             res.append(tmp)
         except:
-            try:
-                sys.stderr.write(str(sys.exc_info()[0])+'\n'+str(sys.exc_info()[1]))
-            except:
-                print sys.exc_info()
-            pass
+            catchError()
 
     removeAll(res,None)
     return res
@@ -63,8 +69,8 @@ def hello():
 def runCode():
     """runs the code sent to the server. Also redirects stdout and stderr"""
     stdout,stderr = redirectStreams()
-
-    definitions, calls = unidecode(request.args['text']).split('run')#code.split('run')##split
+    code = unidecode(request.args['text']).split('__code__')[-1]
+    definitions, calls = code.split('__run__')#code.split('run')##split
 
     domain = makeDefn(definitions)
     text = executedCode(calls, domain)
