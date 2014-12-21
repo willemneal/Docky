@@ -1,0 +1,80 @@
+from flask import Flask, request, json
+app = Flask(__name__)
+app.config['DEBUG'] = True
+from unidecode import unidecode
+import sys
+try:
+    from cStringIO import StringIO
+except:
+    from StringIO import StringIO
+# Note: We don't need to call run() since our application is embedded within
+# the App Engine WSGI application server.
+
+def makeDefn(definitions):
+    """calls all statements and returns their def'n in doman"""
+    domain = {}
+    exec definitions in domain
+    return domain
+
+def removeAll(List, Element):
+    """Removes all Instances of element"""
+    while Element in List:
+        List.remove(Element)
+
+def executedCode(calls, domain):
+    """Calls eval on each separate line of code"""
+    calls = calls.split('\n')
+    removeAll(calls,'')
+    res = []
+    for call in calls:
+        try:
+            tmp = str(eval(call,domain))
+            res.append(tmp)
+        except:
+            try:
+                sys.stderr.write(str(sys.exc_info()[0])+'\n'+str(sys.exc_info()[1]))
+            except:
+                print sys.exc_info()
+            pass
+
+    removeAll(res,None)
+    return res
+
+def redirectStreams():
+    stdout = StringIO()
+    sys.stdout = stdout
+    stderr = StringIO()
+    sys.stderr = stderr
+    return stdout,stderr
+
+def resetStreams(stdout, stderr):
+    stdout.close()
+    stderr.close()
+    sys.stdout = sys.__stdout__
+    sys.stderr = sys.__stderr__
+
+@app.route('/')
+def hello():
+    """Return a friendly HTTP greeting."""
+    return 'Hello World!'
+
+
+@app.route('/eval',methods=["POST","GET"])
+def runCode():
+    """runs the code sent to the server. Also redirects stdout and stderr"""
+    stdout,stderr = redirectStreams()
+
+    definitions, calls = unidecode(request.args['text']).split('run')#code.split('run')##split
+
+    domain = makeDefn(definitions)
+    text = executedCode(calls, domain)
+    result = json.dumps({'text':text,'stdout':stdout.getvalue(),'stderr':stderr.getvalue()})
+    
+    resetStreams(stdout,stderr)
+
+    return result
+
+@app.errorhandler(404)
+def page_not_found(e):
+    """Return a custom 404 error."""
+    return 'Sorry, nothing at this URL.', 404
