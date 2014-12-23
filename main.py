@@ -31,7 +31,7 @@ def removeAll(List, Element):
     while Element in List:
         List.remove(Element)
 
-def executedCode(calls, domain):
+def executeCode(calls, domain):
     """Calls eval on each separate line of code"""
     calls = calls.split('\n')
     removeAll(calls,'')
@@ -59,6 +59,17 @@ def resetStreams(stdout, stderr):
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
 
+def unpackCode():
+    code = unidecode(request.args['text']).split('__code__')[-1]
+    definitions, calls = code.split('__run__')
+    calls = calls.split('__result__')[0]
+    return definitions, calls
+
+def getResult(definitions,calls):
+    domain = makeDefn(definitions)
+    text = executeCode(calls, domain)
+    return json.dumps({'text':text,'stdout':stdout.getvalue(),'stderr':stderr.getvalue()})
+
 @app.route('/')
 def hello():
     """Return a friendly HTTP greeting."""
@@ -68,16 +79,9 @@ def hello():
 @app.route('/eval',methods=["POST","GET"])
 def runCode():
     """runs the code sent to the server. Also redirects stdout and stderr"""
-    stdout,stderr = redirectStreams()
-    code = unidecode(request.args['text']).split('__code__')[-1]
-    definitions, calls = code.split('__run__')#code.split('run')##split
-
-    domain = makeDefn(definitions)
-    text = executedCode(calls, domain)
-    result = json.dumps({'text':text,'stdout':stdout.getvalue(),'stderr':stderr.getvalue()})
-    
+    stdout,stderr = redirectStreams()   
+    result = getResult(unpackCode())
     resetStreams(stdout,stderr)
-
     return result
 
 @app.errorhandler(404)
