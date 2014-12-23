@@ -9,10 +9,6 @@ Add syntax analysis.
 
 [unidecode](https://pypi.python.org/pypi/Unidecode)
 
-
-## Contributing changes
-See [CONTRIB.md](CONTRIB.md)
-
 ## Licensing
 See [LICENSE](LICENSE)
 
