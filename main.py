@@ -65,10 +65,10 @@ def unpackCode():
     calls = calls.split('__result__')[0]
     return definitions, calls
 
-def getResult(definitions,calls):
+def getResult(code):
+    definitions, calls = code
     domain = makeDefn(definitions)
-    text = executeCode(calls, domain)
-    return json.dumps({'text':text,'stdout':stdout.getvalue(),'stderr':stderr.getvalue()})
+    return executeCode(calls, domain)
 
 @app.route('/')
 def hello():
@@ -80,9 +80,9 @@ def hello():
 def runCode():
     """runs the code sent to the server. Also redirects stdout and stderr"""
     stdout,stderr = redirectStreams()   
-    result = getResult(unpackCode())
+    response = json.dumps({'text':getResult(unpackCode()),'stdout':stdout.getvalue(),'stderr':stderr.getvalue()})
     resetStreams(stdout,stderr)
-    return result
+    return response
 
 @app.errorhandler(404)
 def page_not_found(e):
