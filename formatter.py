@@ -1,7 +1,7 @@
 
 from pygments import highlight
 from pygments.lexers import PythonLexer
-from pygments.styles import get_style_by_name
+from pygments.styles import get_style_by_name, get_all_styles
 from pygments.formatter import Formatter
 
 class NewFormatter(Formatter):
@@ -21,11 +21,11 @@ class NewFormatter(Formatter):
                 color = "#"+style['color']
             else:
                 color = style['color']
-            self.styles[token] = (color, style['bold'],style['italic'],style['underline'])
+            self.styles[token] = (color, style['bold'], style['italic'], style['underline'])
 
     def writeToBuffer(self,lasttype, lastval,outfile):
         color, bold,italic,underline = self.styles[lasttype]
-        outfile.write((lastval,{'color':color,'bold':bold,'italic':italic,'underline':underline}))
+        outfile.write((lastval,{'color':color, 'bold':bold, 'italic':italic, 'underline':underline}))
 
     def format(self, tokensource, outfile):
         # lastval is a string we use for caching
@@ -86,6 +86,10 @@ def highlightCode(text,Style='monokai'):
     highlight(text, PythonLexer(), NewFormatter(style=Style), outfile=Buff)
     return Buff.buff
 
+def checkStyle(style):
+    if style is None or style not in list(get_all_styles()):
+        return 'monokai'
+    return style
 
 
 

@@ -67,6 +67,9 @@ def getResult(code):
     domain = makeDefn(definitions)
     return executeCode(calls, domain)
 
-def formatCode(code):
+
+
+def formatCode(code,style='monokai'):
+    style = checkStyle(style)
     definitions,calls = code
-    return highlightCode(definitions)
+    return highlightCode(definitions,style)

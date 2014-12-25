@@ -30,4 +30,4 @@ def page_not_found(e):
 
 @app.route('/prettify',methods=["GET"])
 def makePretty():
-    return json.dumps({'text':formatCode(unpackCode(request.args['text']))})
+    return json.dumps({'text':formatCode(unpackCode(request.args['text']),request.args['style'])})
