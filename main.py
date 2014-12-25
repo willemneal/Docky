@@ -17,7 +17,9 @@ def hello():
 def runCode():
     """runs the code sent to the server. Also redirects stdout and stderr"""
     stdout,stderr = redirectStreams()   
-    response = json.dumps({'text':getResult(unpackCode()),'stdout':stdout.getvalue(),'stderr':stderr.getvalue()})
+    response = json.dumps({'text':getResult(unpackCode(request.args['text'])),
+                           'stdout':stdout.getvalue(),
+                           'stderr':stderr.getvalue()})
     resetStreams(stdout,stderr)
     return response
 
@@ -25,3 +27,7 @@ def runCode():
 def page_not_found(e):
     """Return a custom 404 error."""
     return 'Sorry, nothing at this URL.', 404
+
+@app.route('/prettify',methods=["GET"])
+def makePretty():
+    return json.dumps({'text':formatCode(unpackCode(request.args['text']))})

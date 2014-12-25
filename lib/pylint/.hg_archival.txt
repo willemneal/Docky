@@ -1,0 +1,5 @@
+repo: 79b31c260ad15738a52b504b0ae29b52abf6367b
+node: 097def848c03f17ff067a4a34d4f7f66b7b98b4a
+branch: default
+latesttag: pylint-1.4
+latesttagdistance: 29

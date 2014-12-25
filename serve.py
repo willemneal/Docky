@@ -5,11 +5,12 @@ try:
 except:
     from StringIO import StringIO
 
+from formatter import *
 
 def catchError():
     try:
         sys.stderr.write(str(sys.exc_info()[0])+'\n'+str(sys.exc_info()[1]))
-    except *:
+    except:
         print sys.exc_info()
 
 
@@ -36,7 +37,7 @@ def executeCode(calls, domain):
         try:
             tmp = str(eval(call,domain))
             res.append(tmp)
-        except *:
+        except:
             catchError()
 
     removeAll(res,None)
@@ -55,8 +56,8 @@ def resetStreams(stdout, stderr):
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
 
-def unpackCode():
-    code = unidecode(request.args['text']).split('__code__')[-1]
+def unpackCode(code):
+    code = unidecode(code).split('__code__')[-1]
     definitions, calls = code.split('__run__')
     calls = calls.split('__result__')[0]
     return definitions, calls
@@ -65,3 +66,7 @@ def getResult(code):
     definitions, calls = code
     domain = makeDefn(definitions)
     return executeCode(calls, domain)
+
+def formatCode(code):
+    definitions,calls = code
+    return highlightCode(definitions)
