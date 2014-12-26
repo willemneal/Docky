@@ -10,16 +10,16 @@ from serve import *
 @app.route('/')
 def hello():
     """Return a friendly HTTP greeting."""
-    return 'Hello World!'
+    return 'Docky-py!'
 
 
 @app.route('/eval',methods=["POST","GET"])
 def runCode():
     """runs the code sent to the server. Also redirects stdout and stderr"""
-    stdout,stderr = redirectStreams()   
-    response = json.dumps({'text':getResult(unpackCode(request.args['text'])),
-                           'stdout':stdout.getvalue(),
-                           'stderr':stderr.getvalue()})
+    stdout,stderr = redirectStreams() 
+    buildCode(request.args['text'])  
+    response = json.dumps({'stdout':stdout.getvalue(),
+                          'stderr':stderr.getvalue()})
     resetStreams(stdout,stderr)
     return response
 
@@ -30,4 +30,5 @@ def page_not_found(e):
 
 @app.route('/prettify',methods=["GET"])
 def makePretty():
-    return json.dumps({'text':formatCode(unpackCode(request.args['text']),request.args['style'])})
+    return json.dumps({'text':formatCode(request.args['text'],request.args['style'])})
+

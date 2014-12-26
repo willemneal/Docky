@@ -1,4 +1,4 @@
-from unidecode import unidecode
+#from unidecode import unidecode
 import sys
 try:
     from cStringIO import StringIO
@@ -6,6 +6,8 @@ except:
     from StringIO import StringIO
 
 from formatter import *
+from code import InteractiveConsole as Interpreter
+from code import compile_command
 
 def catchError():
     try:
@@ -13,35 +15,10 @@ def catchError():
     except:
         print sys.exc_info()
 
-
-def makeDefn(definitions):
-    """calls all statements and returns their def'n in domain"""
-    domain = {}
-    try:
-        exec definitions in domain
-    except:
-        catchError()
-    return domain
-
 def removeAll(List, Element):
     """Removes all Instances of element"""
     while Element in List:
         List.remove(Element)
-
-def executeCode(calls, domain):
-    """Calls eval on each separate line of code"""
-    calls = calls.split('\n')
-    removeAll(calls,'')
-    res = []
-    for call in calls:
-        try:
-            tmp = str(eval(call,domain))
-            res.append(tmp)
-        except:
-            catchError()
-
-    removeAll(res,None)
-    return res
 
 def redirectStreams():
     stdout = StringIO()
@@ -56,20 +33,49 @@ def resetStreams(stdout, stderr):
     sys.stdout = sys.__stdout__
     sys.stderr = sys.__stderr__
 
-def unpackCode(code):
-    code = unidecode(code).split('__code__')[-1]
-    definitions, calls = code.split('__run__')
-    calls = calls.split('__result__')[0]
-    return definitions, calls
-
-def getResult(code):
-    definitions, calls = code
-    domain = makeDefn(definitions)
-    return executeCode(calls, domain)
-
-
 
 def formatCode(code,style='monokai'):
-    style = checkStyle(style)
-    definitions,calls = code
-    return highlightCode(definitions,style)
+        return highlightCode(code,style)
+
+def cleanSplit(string,delimiter):
+    splitString = string.split(delimiter)
+    for i,word in enumerate(splitString):
+        if word == '':
+            splitString[i] = delimiter
+    return splitString
+
+class PythonBuilder(Interpreter):
+
+    @classmethod
+    def getLines(cls,string):
+        lines = cleanSplit(string,'\n')
+        #print lines
+        lines = cls.removeComments(lines)
+        #print lines
+        return lines
+
+    @staticmethod
+    def removeComments(lines):
+        return [line for line in lines if not line.strip().startswith("#") ]
+
+    
+    def buildAndRun(self,string):
+        lines = self.getLines(string)
+        for line in lines:
+            try:
+                incomplete = self.push(line)
+            except:
+                catchError()
+                break
+
+            if incomplete:
+                continue
+            #print line
+            self.resetbuffer()
+
+def buildCode(string):
+    domain = {}
+    builder = PythonBuilder(domain)
+    builder.buildAndRun(unidecode(string))
+
+

@@ -16,16 +16,24 @@ class NewFormatter(Formatter):
 
         # we iterate over the `_styles` attribute of a style item
         # that contains the parsed style values.
+        
         for token, style in self.style:
+            if style['bgcolor'] is not None:
+                bgcolor = "#"+style['bgcolor']
+            else:
+                bgcolor = self.style.background_color
             if style['color'] is not None:
                 color = "#"+style['color']
             else:
                 color = style['color']
-            self.styles[token] = (color, style['bold'], style['italic'], style['underline'])
+            self.styles[token] = {'color':color,
+                                'bold':style['bold'], 
+                                'italic':style['italic'], 
+                                'underline':style['underline'],
+                                'bgcolor':bgcolor}
 
     def writeToBuffer(self,lasttype, lastval,outfile):
-        color, bold,italic,underline = self.styles[lasttype]
-        outfile.write((lastval,{'color':color, 'bold':bold, 'italic':italic, 'underline':underline}))
+        outfile.write((lastval,self.styles[lasttype]))
 
     def format(self, tokensource, outfile):
         # lastval is a string we use for caching
@@ -79,9 +87,8 @@ class listBuffer(object):
             self.buff.append(e)
 
 
-
-
 def highlightCode(text,Style='monokai'):
+    Style = checkStyle(Style)
     Buff = listBuffer()
     highlight(text, PythonLexer(), NewFormatter(style=Style), outfile=Buff)
     return Buff.buff
