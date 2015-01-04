@@ -1,7 +1,8 @@
 from flask import Flask, request, json
 app = Flask(__name__)
 app.config['DEBUG'] = True
-from serve import *
+from builder import buildCode
+from formatter import highlightCode
 # Note: We don't need to call run() since our application is embedded within
 # the App Engine WSGI application server.
 
@@ -16,12 +17,8 @@ def hello():
 @app.route('/eval',methods=["POST","GET"])
 def runCode():
     """runs the code sent to the server. Also redirects stdout and stderr"""
-    stdout,stderr = redirectStreams() 
-    buildCode(request.args['text'])  
-    response = json.dumps({'stdout':stdout.getvalue(),
-                          'stderr':stderr.getvalue()})
-    resetStreams(stdout,stderr)
-    return response
+      
+    return json.dumps(buildCode(request.args['text']))
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -30,5 +27,6 @@ def page_not_found(e):
 
 @app.route('/prettify',methods=["GET"])
 def makePretty():
-    return json.dumps({'text':formatCode(request.args['text'],request.args['style'])})
+    '''returns styling '''
+    return json.dumps({'text':highlightCode(request.args['text'],request.args['style'])})
 

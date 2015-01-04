@@ -4,8 +4,13 @@ from pygments.lexers import PythonLexer
 from pygments.styles import get_style_by_name, get_all_styles
 from pygments.formatter import Formatter
 
-class NewFormatter(Formatter):
+class SimpleFormatter(Formatter):
+    '''Custom formatter that simply returns the style info.
 
+    Other formatters format the code to a particular style,
+    e.g. HTML and return the words formatted for the style.
+
+    '''
     def __init__(self, **options):
         Formatter.__init__(self, **options)
 
@@ -77,34 +82,28 @@ class NewFormatter(Formatter):
 
 
 class listBuffer(object):
-
+    '''Simple Buffer object needed by formatter.'''
     def __init__(self):
         self.buff = []
         pass
 
     def write(self, e):
-        if e[0] != ' ':
+        '''Formatter needs a buffer with write()'''
+        if e[0] != ' ': #ignore spaces
             self.buff.append(e)
 
 
 def highlightCode(text,Style='monokai'):
-    Style = checkStyle(Style)
+    '''Assoiates style information for each token in the text'''
+    Style = checkStyle(Style) #ensures style exists
     Buff = listBuffer()
-    highlight(text, PythonLexer(), NewFormatter(style=Style), outfile=Buff)
+    highlight(text, PythonLexer(), SimpleFormatter(style=Style), outfile=Buff)
     return Buff.buff
 
 def checkStyle(style):
+    '''Checks if style is valid, returns monokai otherwise'''
     if style is None or style not in list(get_all_styles()):
         return 'monokai'
     return style
 
-
-
-# s = '''
-# def lineOfCode(x):
-#     print 'line of code'
-#     print 'hello my firend'
-#     return 547.0/x
-#     '''
-# print highlightCode(s)
 
