@@ -9,7 +9,9 @@ Add syntax analysis with pylint.
 
 ### Included Libraries
 [flask](http://flask.pocoo.org/) - Web server
+
 [unidecode](https://pypi.python.org/pypi/Unidecode) - Decoding unicode
+
 [pygments](http://pygments.org) - Formatting code
 
 ## Licensing
